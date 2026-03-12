@@ -25,7 +25,7 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YOUR_USERNAME/feirou-stock-monitor.git ~/.openclaw/workspace/skills/feirou-stock-monitor
+git clone https://github.com/Ycchccc/feirou-stock-monitor.git ~/.openclaw/workspace/skills/feirou-stock-monitor
 
 # 2. 进入目录
 cd ~/.openclaw/workspace/skills/feirou-stock-monitor
@@ -45,7 +45,7 @@ python3 daily_with_notify.py
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YOUR_USERNAME/feirou-stock-monitor.git ~/.openclaw/workspace/skills/feirou-stock-monitor
+git clone https://github.com/Ycchccc/feirou-stock-monitor.git ~/.openclaw/workspace/skills/feirou-stock-monitor
 
 # 2. 安装依赖
 cd ~/.openclaw/workspace/skills/feirou-stock-monitor

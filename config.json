@@ -1,0 +1,19 @@
+{
+  "stocks": [
+    {"code": "600010", "name": "包钢股份", "cost": 4.253, "shares": 100},
+    {"code": "600050", "name": "中国联通", "cost": 7.811, "shares": 100},
+    {"code": "300264", "name": "佳都科技", "cost": 16.417, "shares": 100},
+    {"code": "601106", "name": "中国一重", "cost": 18.436, "shares": 100},
+    {"code": "688660", "name": "中创智领", "cost": 26.051, "shares": 100},
+    {"code": "000063", "name": "中兴通讯", "cost": 19.244, "shares": 100},
+    {"code": "600222", "name": "海南海药", "cost": 4.370, "shares": 100},
+    {"code": "300398", "name": "R 爱康 1", "cost": 1.000, "shares": 100}
+  ],
+  "notify_time": "16:00",
+  "user_id": "请修改为你的飞书用户 ID（格式：ou_xxx）",
+  "thresholds": {
+    "drop_warn": -5.0,
+    "profit_take": 20.0,
+    "stop_loss": -15.0
+  }
+}

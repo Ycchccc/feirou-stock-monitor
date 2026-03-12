@@ -58,9 +58,14 @@ def send_feishu_report():
     if user_config_file.exists():
         with open(user_config_file, "r", encoding="utf-8") as f:
             user_config = json.load(f)
-        user_id = user_config.get("user_id", "ou_b5177901cd6463053203c6201dbeb0ed")
+        user_id = user_config.get("user_id", "")
     else:
-        user_id = "ou_b5177901cd6463053203c6201dbeb0ed"  # 默认
+        user_id = ""  # 需要在配置文件中设置
+    
+    if not user_id:
+        print("❌ 错误：未配置飞书 user_id")
+        print("请编辑 ~/.stock_monitor/config.json，设置 user_id 为你的飞书 ID（格式：ou_xxx）")
+        return 1
     
     print(f"\n📤 正在发送到飞书...")
     

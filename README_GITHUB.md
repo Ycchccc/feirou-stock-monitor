@@ -95,7 +95,7 @@ python3 daily_with_notify.py
     }
   ],
   "notify_time": "16:00",
-  "user_id": "ou_b5177901cd6463053203c6201dbeb0ed",
+  "user_id": "请修改为你的飞书 ID（格式：ou_xxx）",
   "thresholds": {
     "drop_warn": -5.0,
     "profit_take": 20.0,

@@ -12,11 +12,19 @@ from datetime import datetime
 def send_to_feishu(message):
     """使用 OpenClaw message 工具发送飞书消息"""
     
-    # 方法：通过 openclaw CLI 发送
-    # 或者调用 message API
+    # 从用户配置读取 user_id
+    user_config_file = Path.home() / ".stock_monitor" / "config.json"
+    if user_config_file.exists():
+        with open(user_config_file, "r", encoding="utf-8") as f:
+            user_config = json.load(f)
+        user_id = user_config.get("user_id", "")
+    else:
+        user_id = ""
     
-    # 这里我们创建一个 shell 命令，由外部调用 OpenClaw
-    user_id = "ou_b5177901cd6463053203c6201dbeb0ed"
+    if not user_id:
+        print("❌ 错误：未配置飞书 user_id")
+        print("请编辑 ~/.stock_monitor/config.json，设置 user_id 为你的飞书 ID（格式：ou_xxx）")
+        return False
     
     # 保存消息到临时文件
     msg_file = Path("/tmp/stock_feishu_msg.txt")

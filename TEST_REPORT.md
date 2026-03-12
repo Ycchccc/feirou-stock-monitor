@@ -87,7 +87,7 @@ cat ~/.stock_monitor/config.json
 code ~/.stock_monitor/config.json
 
 # 修改为实际 ID
-"user_id": "ou_b5177901cd6463053203c6201dbeb0ed"
+"user_id": "ou_xxx (已修改)"
 ```
 
 **结果**: ✅ 成功

@@ -3,8 +3,8 @@ name: feirou-stock-monitor
 description: A 股股票自动监控，每日收盘后推送持仓日报到飞书，支持盈亏分析、卖出提醒
 icon: 📈
 os: macos
-tools: akshare, pandas
-install: pip install akshare pandas
+tools: requests (Python built-in)
+install: 无需安装依赖
 tags: stock, finance, feishu, monitoring
 ---
 
@@ -17,37 +17,14 @@ tags: stock, finance, feishu, monitoring
 - 📊 **每日日报** — 收盘后 30 分钟自动推送
 - 💰 **持仓盈亏** — 实时计算每只股票的盈亏
 - 📈 **涨跌分析** — 与昨日对比、累计收益
-- ⚠️ **智能提醒** — 跌幅预警、止盈止损、均线突破
+- ⚠️ **智能提醒** — 跌幅预警、止盈止损
 - 📱 **飞书推送** — 直接发送到你的飞书私信
 
 ## 快速开始
 
-### 1. 安装 Skill
+### 1. 配置监控股票
 
-```bash
-# 方式 1：通过 clawhub（推荐）
-npx clawhub install feirou-stock-monitor
-
-# 方式 2：手动克隆
-git clone https://github.com/YOUR_REPO/feirou-stock-monitor.git ~/.openclaw/workspace/skills/feirou-stock-monitor
-```
-
-### 2. 安装依赖
-
-```bash
-cd ~/.openclaw/workspace/skills/feirou-stock-monitor
-pip3 install akshare pandas
-```
-
-### 3. 配置监控股票
-
-运行配置向导：
-
-```bash
-python3 setup.py
-```
-
-或手动编辑 `~/.stock_monitor/config.json`：
+编辑配置文件 `~/.stock_monitor/config.json`：
 
 ```json
 {
@@ -60,13 +37,14 @@ python3 setup.py
 }
 ```
 
-### 4. 安装定时任务
+### 2. 安装定时任务
 
 ```bash
-python3 setup.py install-cron
+cd ~/.openclaw/workspace/skills/feirou-stock-monitor-github
+python3 setup_cron.py install
 ```
 
-### 5. 测试运行
+### 3. 测试运行
 
 ```bash
 python3 stock_monitor.py
@@ -105,30 +83,39 @@ python3 stock_monitor.py
 python3 daily_with_notify.py
 
 # 查看定时任务状态
-launchctl list | grep feirou-stock-monitor
+crontab -l | grep stock
 
 # 查看日志
 cat /tmp/stock_monitor.log
 
 # 卸载定时任务
-python3 setup.py uninstall-cron
+python3 setup_cron.py uninstall
 ```
 
 ## 文件结构
 
 ```
-~/.openclaw/workspace/skills/feirou-stock-monitor/
+~/.openclaw/workspace/skills/feirou-stock-monitor-github/
 ├── stock_monitor.py          # 核心脚本
+├── tencent_api.py            # 腾讯 API 数据获取
 ├── daily_with_notify.py      # 每日推送
-├── setup.py                  # 配置向导
+├── setup_cron.py             # 定时任务配置
 ├── config.json               # 默认配置
-└── SKILL.md                  # 本文档
+└── README.md                 # 详细文档
 
 ~/.stock_monitor/
 ├── config.json               # 用户配置
 ├── history.json              # 历史数据
 └── report_YYYY-MM-DD.json    # 每日报告
 ```
+
+## 数据来源
+
+使用 **腾讯财经 API**，稳定可靠。
+
+替代方案对比：
+- ❌ akshare：已停止维护，连接不稳定
+- ✅ 腾讯 API：稳定、快速、无需认证
 
 ## 多用户支持
 
@@ -137,16 +124,16 @@ python3 setup.py uninstall-cron
 ## 问题排查
 
 **Q: 收不到日报？**
-- 检查定时任务：`launchctl list | grep feirou-stock-monitor`
+- 检查定时任务：`crontab -l | grep stock`
 - 查看日志：`cat /tmp/stock_monitor.log`
 - 手动运行：`python3 daily_with_notify.py`
 
 **Q: 股票数据获取失败？**
-- 检查网络
-- 更新 akshare：`pip3 install --upgrade akshare`
+- 检查网络连接
+- 手动测试：`python3 tencent_api.py`
 
 **Q: 飞书消息发送失败？**
-- 检查 user_id 是否正确
+- 检查 user_id 是否正确（格式：ou_xxx）
 - 测试 openclaw message：`openclaw message send --help`
 
 ## 许可证

@@ -18,6 +18,8 @@ def install():
     
     # macOS 使用 launchd
     notify_script = SCRIPT_DIR / "daily_with_notify.py"
+    python_path = "/usr/local/bin/python3"  # 使用正确的 Python 路径
+    
     launchd_plist = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -27,7 +29,7 @@ def install():
     
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
+        <string>{python_path}</string>
         <string>{notify_script.absolute()}</string>
     </array>
     

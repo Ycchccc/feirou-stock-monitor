@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-股票监控日报 - 带飞书推送
-每天 16:00 运行，生成报告并发送到飞书
+股票监控日报 - 生成报告
+每天 16:00 运行，生成报告并保存
+
+发送方式（任选其一）：
+1. 飞书 webhook - 配置 ~/.stock_monitor/webhook.txt
+2. OpenClaw message 工具 - 在飞书中运行 /stock 命令
+3. 手动查看 - 查看 /tmp/stock_monitor.log
 """
 
 import json
@@ -13,91 +18,96 @@ from datetime import datetime
 SCRIPT_DIR = Path(__file__).parent
 STOCK_SCRIPT = SCRIPT_DIR / "stock_monitor.py"
 DATA_DIR = Path.home() / ".stock_monitor"
+LOG_FILE = Path("/tmp/stock_monitor.log")
 
-def get_today_report():
-    """获取今日报告"""
-    today = datetime.now().strftime("%Y-%m-%d")
-    report_file = DATA_DIR / f"report_{today}.json"
-    
-    if report_file.exists():
-        with open(report_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return None
 
-def send_feishu_report():
-    """发送飞书报告"""
-    # 先运行股票监控脚本生成报告
+def run_stock_monitor():
+    """运行股票监控脚本"""
     print("📊 生成股票日报...")
+    python_path = "/usr/local/bin/python3"
+    
     result = subprocess.run(
-        [sys.executable, str(STOCK_SCRIPT)],
+        [python_path, str(STOCK_SCRIPT)],
         capture_output=True,
         text=True,
         cwd=str(SCRIPT_DIR)
     )
     
+    # 记录日志
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write(result.stdout)
+        if result.stderr:
+            f.write("\n---ERROR---\n")
+            f.write(result.stderr)
+    
+    print(f"✅ 日志已保存：{LOG_FILE}")
+    
     # 提取消息
     output = result.stdout
-    if "---MESSAGE_START---" not in output or "---MESSAGE_END---" not in output:
+    if "---MESSAGE_START---" not in output:
         print("❌ 报告生成失败")
         print(output)
-        return False
+        return None
     
     message = output.split("---MESSAGE_START---")[1].split("---MESSAGE_END---")[0].strip()
+    return message
+
+
+def send_via_webhook(message: str) -> bool:
+    """通过飞书 webhook 发送"""
+    webhook_file = DATA_DIR / "webhook.txt"
     
-    # 保存报告到临时文件
+    if not webhook_file.exists():
+        return False
+    
+    with open(webhook_file, "r", encoding="utf-8") as f:
+        webhook_url = f.read().strip()
+    
+    if not webhook_url:
+        return False
+    
+    import requests
+    payload = {
+        "msg_type": "text",
+        "content": {"text": message}
+    }
+    
+    try:
+        r = requests.post(webhook_url, json=payload, timeout=10)
+        result = r.json()
+        if result.get("StatusCode") == 0 or result.get("code") == 0:
+            print("✅ 通过 webhook 发送成功！")
+            return True
+    except:
+        pass
+    
+    return False
+
+
+def main():
+    message = run_stock_monitor()
+    
+    if not message:
+        sys.exit(1)
+    
+    # 尝试通过 webhook 发送
+    if send_via_webhook(message):
+        sys.exit(0)
+    
+    # webhook 不可用时，只保存日志
+    print("\n💡 飞书推送未配置，可选择以下方式查看报告：")
+    print(f"  1. 查看日志：cat {LOG_FILE}")
+    print("  2. 在飞书中运行：python3 stock_monitor.py")
+    print("  3. 配置 webhook：将飞书机器人 webhook URL 保存到 ~/.stock_monitor/webhook.txt")
+    
+    # 保存消息到临时文件
     msg_file = Path("/tmp/stock_report_today.txt")
     with open(msg_file, "w", encoding="utf-8") as f:
         f.write(message)
+    print(f"\n📄 报告已保存：{msg_file}")
     
-    print(f"✅ 报告已生成：{msg_file}")
-    print(f"消息长度：{len(message)} 字符")
-    
-    # 使用 OpenClaw message 工具发送
-    # 从用户配置读取 user_id
-    user_config_file = Path.home() / ".stock_monitor" / "config.json"
-    if user_config_file.exists():
-        with open(user_config_file, "r", encoding="utf-8") as f:
-            user_config = json.load(f)
-        user_id = user_config.get("user_id", "")
-    else:
-        user_id = ""  # 需要在配置文件中设置
-    
-    if not user_id:
-        print("❌ 错误：未配置飞书 user_id")
-        print("请编辑 ~/.stock_monitor/config.json，设置 user_id 为你的飞书 ID（格式：ou_xxx）")
-        return 1
-    
-    print(f"\n📤 正在发送到飞书...")
-    
-    # 调用 openclaw message 命令
-    cmd = [
-        "openclaw", "message", "send",
-        "--channel=feishu",
-        f"--target=user:{user_id}",
-        f"--message={message}"
-    ]
-    
-    try:
-        msg_result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        if msg_result.returncode == 0:
-            print("✅ 飞书消息发送成功！")
-            return True
-        else:
-            print(f"❌ 发送失败：{msg_result.stderr}")
-            # 如果自动发送失败，提供手动方案
-            print(f"\n💡 请手动复制以下内容发送到飞书：")
-            print("=" * 60)
-            print(message)
-            print("=" * 60)
-            return False
-    except Exception as e:
-        print(f"❌ 发送异常：{e}")
-        print(f"\n💡 请手动复制以下内容发送到飞书：")
-        print("=" * 60)
-        print(message)
-        print("=" * 60)
-        return False
+    sys.exit(0)
+
 
 if __name__ == "__main__":
-    success = send_feishu_report()
-    sys.exit(0 if success else 1)
+    main()

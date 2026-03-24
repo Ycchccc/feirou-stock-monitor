@@ -1,8 +1,7 @@
 {
   "stocks": [
     {"code": "600010", "name": "包钢股份", "cost": 4.253, "shares": 100},
-    {"code": "688660", "name": "中创智领", "cost": 26.051, "shares": 100},
-    {"code": "600222", "name": "海南海药", "cost": 4.370, "shares": 100},
+    {"code": "600050", "name": "中国联通", "cost": 7.811, "shares": 100}
   ],
   "notify_time": "16:00",
   "user_id": "请修改为你的飞书用户 ID（格式：ou_xxx）",

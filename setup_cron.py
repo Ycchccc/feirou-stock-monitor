@@ -17,8 +17,8 @@ def install():
     script_path = SCRIPT_DIR / "run_daily.py"
     
     # macOS 使用 launchd
-    notify_script = SCRIPT_DIR / "daily_with_notify.py"
-    python_path = "/usr/local/bin/python3"  # 使用正确的 Python 路径
+    notify_script = SCRIPT_DIR / "send_feishu_auto.py"
+    python_path = "/opt/homebrew/bin/python3"  # macOS Homebrew Python
     
     launchd_plist = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

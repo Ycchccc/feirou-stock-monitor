@@ -22,6 +22,8 @@ def get_stock_data_tencent(code):
             market = "sh"
         elif code.startswith('0') or code.startswith('3'):
             market = "sz"
+        elif code.startswith('4'):  # 老三板/退市股（如 400235 R 爱康 1）
+            market = "sh"
         else:
             print(f"  未知市场代码：{code}")
             return None
@@ -90,6 +92,15 @@ def get_stock_data_tencent(code):
         except:
             pass
         
+        # 获取昨日数据（用于对比）
+        yesterday_data = None
+        if len(klines) >= 3:
+            two_days_ago = klines[-3]  # 前天的数据作为昨日同期对比
+            yesterday_data = {
+                "close": float(two_days_ago[2]) if two_days_ago[2] else 0,
+                "volume": float(two_days_ago[5]) if two_days_ago[5] else 0,
+            }
+        
         return {
             "code": code,
             "name": name,
@@ -104,6 +115,7 @@ def get_stock_data_tencent(code):
             "turnover": volume * current,  # 估算成交额
             "date": latest[0] if latest[0] else datetime.now().strftime("%Y-%m-%d"),
             "timestamp": datetime.now().isoformat(),
+            "yesterday_data": yesterday_data,  # 昨日同期数据
         }
         
     except requests.RequestException as e:

@@ -36,12 +36,14 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# User data (should not be committed)
-~/.stock_monitor/
+# Logs
 *.log
-/tmp/stock_report*.txt
+/tmp/
 
 # Secrets
 *.pem
 *.key
 .env
+
+# User-specific config (contains sensitive data)
+config.json

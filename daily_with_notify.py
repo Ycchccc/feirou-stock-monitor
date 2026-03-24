@@ -24,10 +24,9 @@ LOG_FILE = Path("/tmp/stock_monitor.log")
 def run_stock_monitor():
     """运行股票监控脚本"""
     print("📊 生成股票日报...")
-    python_path = "/usr/local/bin/python3"
     
     result = subprocess.run(
-        [python_path, str(STOCK_SCRIPT)],
+        ["python3", str(STOCK_SCRIPT)],
         capture_output=True,
         text=True,
         cwd=str(SCRIPT_DIR)

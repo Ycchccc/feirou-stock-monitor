@@ -1,12 +1,12 @@
 {
   "name": "feirou-stock-monitor",
-  "version": "1.0.0",
-  "description": "A 股股票自动监控，每日收盘后推送持仓日报到飞书",
+  "version": "1.1.0",
+  "description": "A 股股票自动监控，每日收盘后推送持仓日报到飞书，支持盘中预警",
   "author": "Your Name",
   "license": "MIT",
-  "tags": ["stock", "finance", "feishu", "monitoring"],
+  "tags": ["stock", "finance", "feishu", "monitoring", "alert"],
   "os": ["macos"],
-  "dependencies": ["akshare", "pandas"],
+  "dependencies": ["requests"],
   "entry": "stock_monitor.py",
-  "setup": "setup.py"
+  "setup": "setup_cron.py"
 }

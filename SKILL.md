@@ -14,7 +14,8 @@ tags: stock, finance, feishu, monitoring
 
 ## 功能
 
-- 📊 **每日日报** — 收盘后 30 分钟自动推送
+- 📊 **每日日报** — 收盘后 16:00 自动推送
+- 🚨 **盘中预警** — 每 10 分钟检查，触发阈值即时推送
 - 💰 **持仓盈亏** — 实时计算每只股票的盈亏
 - 📈 **涨跌分析** — 与昨日对比、累计收益
 - ⚠️ **智能提醒** — 跌幅预警、止盈止损
@@ -82,14 +83,21 @@ python3 stock_monitor.py
 # 手动发送飞书消息
 python3 daily_with_notify.py
 
-# 查看定时任务状态
-crontab -l | grep stock
+# 手动触发盘中预警检查
+python3 intraday_alert.py
 
-# 查看日志
+# 查看定时任务状态
+launchctl list | grep stock-monitor
+
+# 查看日报日志
 cat /tmp/stock_monitor.log
 
+# 查看盘中预警日志
+cat /tmp/stock_intraday.log
+
 # 卸载定时任务
-python3 setup_cron.py uninstall
+launchctl unload ~/Library/LaunchAgents/com.stock-monitor.daily.plist
+launchctl unload ~/Library/LaunchAgents/com.stock-monitor.intraday.plist
 ```
 
 ## 文件结构

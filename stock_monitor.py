@@ -172,14 +172,24 @@ def generate_report(stocks):
         })
         history[code] = stock_history[-90:]
         
+        # 计算昨日同期对比（收盘价对比）
+        yesterday_close_price = None
+        yesterday_close_change = None
+        if current_data.get("yesterday_data"):
+            yesterday_close_price = current_data["yesterday_data"]["close"]
+            if yesterday_close_price > 0:
+                yesterday_close_change = ((today_close - yesterday_close_price) / yesterday_close_price) * 100
+        
         report["stocks"].append({
             "code": code,
-            "name": current_data.get("name", stock["name"]),
+            "name": stock["name"],  # 使用配置文件里的名称，不使用 API 返回的名称
             "current": today_close,
             "open": current_data["open"],
             "high": current_data["high"],
             "low": current_data["low"],
             "yesterday": yesterday_close,
+            "yesterday_close_price": yesterday_close_price,  # 昨日收盘价
+            "yesterday_close_change": yesterday_close_change,  # 与昨日收盘对比涨跌幅
             "change": change_rate,
             "change_amount": current_data["change_amount"],
             "volume": current_data["volume"],
@@ -202,7 +212,13 @@ def format_report_message(report):
     """格式化报告为飞书消息"""
     date = report["date"]
     summary = report["summary"]
-    
+
+    # 计算总市值和总盈亏
+    total_market_value = sum(s.get("market_value", 0) for s in report["stocks"])
+    total_cost = sum(s.get("cost_total", 0) for s in report["stocks"])
+    total_profit = total_market_value - total_cost
+    total_profit_rate = (total_profit / total_cost * 100) if total_cost > 0 else 0
+
     lines = [
         f"📊 股票日报 | {date}",
         f"收盘时间：{report['time']}",
@@ -210,7 +226,41 @@ def format_report_message(report):
         f"📈 涨：{summary['up']}  📉 跌：{summary['down']}  ➖ 平：{summary['flat']}",
         "",
         "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "📋 当前持仓汇总",
+        "",
     ]
+
+    # 持仓表格标题
+    lines.append("股票名称      现价       盈亏%      状态")
+    lines.append("─" * 32)
+
+    for stock in report["stocks"]:
+        name = stock["name"][:6].ljust(6)  # 限制名称长度
+        price = f"¥{stock['current']:.3f}".ljust(9)
+        profit_rate = stock.get("hold_profit_rate", 0)
+        profit_str = f"{profit_rate:+.2f}%".ljust(9)
+
+        # 状态判断
+        if profit_rate > 10:
+            status = "💰 优秀"
+        elif profit_rate > 0:
+            status = "📈 盈利"
+        elif profit_rate > -10:
+            status = "📉 亏损"
+        else:
+            status = "⚠️ 警惕"
+
+        lines.append(f"{name}    {price} {profit_str} {status}")
+
+    lines.append("─" * 32)
+    profit_emoji = "💰" if total_profit > 0 else "💸"
+    lines.append(f"总市值：¥{total_market_value:.2f}")
+    lines.append(f"总成本：¥{total_cost:.2f}")
+    lines.append(f"{profit_emoji} 总盈亏：¥{total_profit:+.2f} ({total_profit_rate:+.2f}%)")
+
+    lines.append("")
+    lines.append("━━━━━━━━━━━━━━━━━━━━")
     
     for i, stock in enumerate(report["stocks"]):
         change_emoji = "📈" if stock["change"] > 0 else "📉" if stock["change"] < 0 else "➖"
@@ -225,6 +275,14 @@ def format_report_message(report):
         lines.append(f"  现价：¥{stock['current']:.3f}  {change_emoji}{change_sign}{stock['change']:.2f}% ({change_sign}{stock['change_amount']:.3f})")
         lines.append(f"  今开：¥{stock['open']:.3f}  最高：¥{stock['high']:.3f}  最低：¥{stock['low']:.3f}")
         lines.append(f"  昨收：¥{stock['yesterday']:.3f}")
+        
+        # 添加与昨日收盘对比
+        if stock.get("yesterday_close_price") and stock.get("yesterday_close_change") is not None:
+            ycp = stock["yesterday_close_price"]
+            ycc = stock["yesterday_close_change"]
+            yc_emoji = "📈" if ycc > 0 else "📉" if ycc < 0 else "➖"
+            yc_sign = "+" if ycc > 0 else ""
+            lines.append(f"  较昨日：¥{ycp:.3f} → ¥{stock['current']:.3f}  {yc_emoji}{yc_sign}{ycc:.2f}%")
         
         if stock.get("cost", 0) > 0 and stock.get("shares", 0) > 0:
             profit_emoji = "💰" if stock["hold_profit"] > 0 else "💸" if stock["hold_profit"] < 0 else "➖"
